@@ -23,6 +23,8 @@ public class Nave4 {
     private boolean herido = false;
     private int tiempoHeridoMax=50;
     private int tiempoHerido;
+    private float direccionX = 0;
+    private float direccionY = 1;
     
     public Nave4(int x, int y, Texture tx, Sound soundChoque, Texture txBala, Sound soundBala) {
     	sonidoHerido = soundChoque;
@@ -32,42 +34,74 @@ public class Nave4 {
     	spr.setPosition(x, y);
     	//spr.setOriginCenter();
     	spr.setBounds(x, y, 45, 45);
+    	spr.setOriginCenter();
 
     }
     public void draw(SpriteBatch batch, PantallaJuego juego){
         float x =  spr.getX();
         float y =  spr.getY();
-        if (!herido) {
-	        // que se mueva con teclado
-	        if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) xVel--;
-	        if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) xVel++;
-        	if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) yVel--;     
-	        if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) yVel++;
-        	
-	     /*   if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) spr.setRotation(++rotacion);
-	        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) spr.setRotation(--rotacion);
-	        
-	        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-	        	xVel -=Math.sin(Math.toRadians(rotacion));
-	        	yVel +=Math.cos(Math.toRadians(rotacion));
-	        	System.out.println(rotacion+" - "+Math.sin(Math.toRadians(rotacion))+" - "+Math.cos(Math.toRadians(rotacion))) ;    
-	        }
-	        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)){
-	        	xVel +=Math.sin(Math.toRadians(rotacion));
-	        	yVel -=Math.cos(Math.toRadians(rotacion));
-	        	     
-	        }*/
-	        
-	        // que se mantenga dentro de los bordes de la ventana
-	        if (x+xVel < 0 || x+xVel+spr.getWidth() > Gdx.graphics.getWidth())
-	        	xVel*=-1;
-	        if (y+yVel < 0 || y+yVel+spr.getHeight() > Gdx.graphics.getHeight())
-	        	yVel*=-1;
-	        
-	        spr.setPosition(x+xVel, y+yVel);   
-         
- 		    spr.draw(batch);
-        } else {
+
+		if (!herido) {
+		
+		    float delta = Gdx.graphics.getDeltaTime();
+		    float velocidad = 230f;
+		
+		    float dx = 0;
+		    float dy = 0;
+		
+		    // Movimiento horizontal
+		    if (Gdx.input.isKeyPressed(Input.Keys.A)
+		            || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+		        dx = -1;
+		    }
+		
+		    if (Gdx.input.isKeyPressed(Input.Keys.D)
+		            || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+		        dx = 1;
+		    }
+		
+		    // Movimiento vertical
+		    if (Gdx.input.isKeyPressed(Input.Keys.W)
+		            || Gdx.input.isKeyPressed(Input.Keys.UP)) {
+		        dy = 1;
+		    }
+		
+		    if (Gdx.input.isKeyPressed(Input.Keys.S)
+		            || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+		        dy = -1;
+		    }
+		
+		    // Normalizar movimiento diagonal
+		    float longitud = (float) Math.sqrt(dx * dx + dy * dy);
+		
+		    if (longitud > 0) {
+		        dx /= longitud;
+		        dy /= longitud;
+		        
+		        direccionX = dx;
+		        direccionY = dy;
+		        
+		        float angulo = MathUtils.atan2(-direccionX,  direccionY) * MathUtils.radiansToDegrees;
+		        spr.setRotation(angulo);
+		    }
+		
+		    // Calcular nueva posicion
+		    float nuevaX = spr.getX() + dx * velocidad * delta;
+		    float nuevaY = spr.getY() + dy * velocidad * delta;
+		
+		    // Mantener personaje dentro de la ventana
+		    nuevaX = MathUtils.clamp(
+		            nuevaX, 0, Gdx.graphics.getWidth() - spr.getWidth());
+		
+		    nuevaY = MathUtils.clamp(
+		            nuevaY, 0, Gdx.graphics.getHeight() - spr.getHeight());
+		
+		    spr.setPosition(nuevaX, nuevaY);
+		
+		    spr.draw(batch);
+		
+		
+		}else {
            spr.setX(spr.getX()+MathUtils.random(-2,2));
  		   spr.draw(batch); 
  		  spr.setX(x);
@@ -76,9 +110,24 @@ public class Nave4 {
  		 }
         // disparo
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {         
-          Bullet  bala = new Bullet(spr.getX()+spr.getWidth()/2-5,spr.getY()+ spr.getHeight()-5,0,3,txBala);
-	      juego.agregarBala(bala);
-	      soundBala.play();
+        	float velocidadBala = 5f;
+
+            // Direccion del disparo
+            float velocidadX = direccionX * velocidadBala;
+            float velocidadY = direccionY * velocidadBala;
+
+            // Centro del personaje
+            float centroX = spr.getX() + spr.getWidth() / 2;
+            float centroY = spr.getY() + spr.getHeight() / 2;
+
+            // La bala aparece delante del personaje
+            float balaX = centroX + direccionX * 25 - txBala.getWidth() / 2f;
+            float balaY = centroY + direccionY * 25 - txBala.getHeight() / 2f;
+
+            Bullet bala = new Bullet(balaX, balaY, velocidadX, velocidadY, txBala);
+
+            juego.agregarBala(bala);
+            soundBala.play();
         }
        
     }

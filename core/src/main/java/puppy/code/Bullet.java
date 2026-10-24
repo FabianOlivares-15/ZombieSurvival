@@ -4,20 +4,28 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 
 
 public class Bullet {
 
-	private int xSpeed;
-	private int ySpeed;
+	private float xSpeed;
+	private float ySpeed;
 	private boolean destroyed = false;
 	private Sprite spr;
 	    
-	    public Bullet(float x, float y, int xSpeed, int ySpeed, Texture tx) {
+	    public Bullet(float x, float y, float xSpeed, float ySpeed, Texture tx) {
 	    	spr = new Sprite(tx);
 	    	spr.setPosition(x, y);
 	        this.xSpeed = xSpeed;
 	        this.ySpeed = ySpeed;
+	     // Girar la bala desde su centro
+	        spr.setOriginCenter();
+
+	        // Orientar la imagen hacia donde avanza
+	        float angulo = MathUtils.atan2(-xSpeed, ySpeed) * MathUtils.radiansToDegrees;
+
+	        spr.setRotation(angulo);
 	    }
 	    public void update() {
 	        spr.setPosition(spr.getX()+xSpeed, spr.getY()+ySpeed);
