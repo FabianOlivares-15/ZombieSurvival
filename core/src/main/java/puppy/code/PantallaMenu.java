@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.Align;
 
 
 public class PantallaMenu implements Screen {
@@ -27,8 +28,8 @@ public class PantallaMenu implements Screen {
 		game.getBatch().setProjectionMatrix(camera.combined);
 
 		game.getBatch().begin();
-		game.getFont().draw(game.getBatch(), "Bienvenido a Space Navigation !", 140, 400);
-		game.getFont().draw(game.getBatch(), "Pincha en cualquier lado o presiona cualquier tecla para comenzar ...", 100, 300);
+		game.getFont().draw(game.getBatch(), "ZOMBIE SURVIVAL", 0, 450, 1200, Align.center, false);
+		game.getFont().draw(game.getBatch(), "Presiona cualquier tecla para sobrevivir...", 0, 350, 1200, Align.center, false);
 	
 		game.getBatch().end();
 
