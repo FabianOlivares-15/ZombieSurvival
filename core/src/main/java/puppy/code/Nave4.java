@@ -13,7 +13,6 @@ import com.badlogic.gdx.math.MathUtils;
 public class Nave4 {
 	
 	private boolean destruida = false;
-    private int vidas = 3;
     private float xVel = 0;
     private float yVel = 0;
     private Sprite spr;
@@ -162,11 +161,11 @@ public class Nave4 {
                spr.setX(spr.getX()+Math.signum(xVel));
             }   */
         	//actualizar vidas y herir
-            vidas--;
+            EstadoPartida.getInstance().perderVida();
             herido = true;
   		    tiempoHerido = tiempoHeridoMax;
   		    sonidoHerido.play();
-            if (vidas<=0) 
+  		    if (getVidas() <= 0) 
           	    destruida = true; 
             return true;
         }
@@ -187,7 +186,7 @@ public class Nave4 {
 	    }
 	
 	    // Restar una vida
-	    vidas--;
+	    EstadoPartida.getInstance().perderVida();
 	
 	    // Activar proteccion temporal
 	    herido = true;
@@ -197,7 +196,7 @@ public class Nave4 {
 	    sonidoHerido.play();
 	
 	    // Comprobar si se quedo sin vidas
-	    if (vidas <= 0) {
+	    if (getVidas() <= 0) {
 	        destruida = true;
 	    }
 	
@@ -212,9 +211,13 @@ public class Nave4 {
  	   return herido;
     }
     
-    public int getVidas() {return vidas;}
+    public int getVidas() {
+    	 return EstadoPartida.getInstance().getVidas();
+    }
     //public boolean isDestruida() {return destruida;}
     public int getX() {return (int) spr.getX();}
     public int getY() {return (int) spr.getY();}
-	public void setVidas(int vidas2) {vidas = vidas2;}
+	public void setVidas(int vidas2) {
+		EstadoPartida.getInstance().setVidas(vidas2);
+	}
 }
