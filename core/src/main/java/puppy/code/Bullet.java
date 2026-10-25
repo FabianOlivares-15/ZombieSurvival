@@ -51,6 +51,29 @@ public class Bullet {
 	        }
 	        return false;
 	    }
+
+		public boolean checkCollision(Zombie zombie) {
+		
+		    // Evitar colisiones con balas o zombis eliminados
+		    if (destroyed || zombie == null
+		            || zombie.estaEliminado()) {
+		        return false;
+		    }
+		
+		    // Comprobar si la bala toca al zombi
+		    if (spr.getBoundingRectangle().overlaps(
+		            zombie.getArea())) {
+		
+		        // Marcar la bala como destruida
+		        destroyed = true;
+		
+		        // Eliminar al zombi
+		        return zombie.recibirDisparo();
+		    }
+		
+		    return false;
+		}
+
 	    
 	    public boolean isDestroyed() {return destroyed;}
 	
