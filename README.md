@@ -1,61 +1,89 @@
-# Zombie Survival — Programación Avanzada
+# Zombie Survival
 
-Videojuego 2D en Java 11 y LibGDX 1.12.1, adaptado a partir de SpaceNav2024.
+**Proyecto de Programación Avanzada**  
+**Tecnologías:** Java 11, LibGDX 1.12.1 y Gradle
 
-## Cómo ejecutarlo en Windows
+## Descripción
 
-1. Tener instalado **Oracle JDK 11** (el JDK elegido para la asignatura).
-2. Importar el proyecto Gradle existente en Eclipse, sin crear uno desde cero.
-3. Abrir **Gradle Tasks → SpaceNav2024-lwjgl3 → application → run**.
-4. Como alternativa, desde CMD, en la raíz del proyecto:
+Zombie Survival es un videojuego de supervivencia 2D en el que el jugador debe resistir oleadas de zombis, evitar el contacto con los enemigos y sumar puntos eliminándolos. Antes de comenzar la partida, se puede elegir entre cuatro personajes.
 
-   ```cmd
-   set "JAVA_HOME=C:\Program Files\Java\jdk-11.0.32.1"
-   set "PATH=%JAVA_HOME%\bin;%PATH%"
-   gradlew.bat :lwjgl3:run
-   ```
+El proyecto parte de la estructura de SpaceNav2024 y adapta sus mecánicas a un juego de supervivencia con enemigos de distintos comportamientos y oleadas progresivas.
 
-   Si el JDK está en otra ruta, reemplazar `JAVA_HOME` por su instalación.
+## Requisitos
+
+- Oracle JDK 11.
+- Eclipse IDE con soporte para Gradle (Buildship), o una terminal compatible.
+- Windows para utilizar el lanzador de escritorio incluido.
+
+## Ejecución
+
+**Desde Eclipse**
+
+1. Importar la carpeta raíz del proyecto como **Existing Gradle Project**.
+2. Configurar el proyecto para utilizar **JDK 11**.
+3. Abrir **Gradle Tasks > SpaceNav2024-lwjgl3 > application > run**.
+
+**Desde CMD en Windows**
+
+En la carpeta raíz del proyecto:
+
+```cmd
+set "JAVA_HOME=C:\Program Files\Java\jdk-11.0.32.1"
+set "PATH=%JAVA_HOME%\bin;%PATH%"
+gradlew.bat :lwjgl3:run
+```
+
+La ruta de `JAVA_HOME` debe ajustarse si JDK 11 está instalado en otra ubicación.
 
 ## Controles
 
-- **WASD** o **flechas**: caminar en 8 direcciones y apuntar.
-- **Espacio**: disparar en la última dirección del movimiento.
-- **Menú**: cualquier tecla o clic para iniciar.
-- **Game Over**: Enter o clic para reintentar; Escape para volver al menú.
+| Acción | Control |
+| --- | --- |
+| Seleccionar personaje | Clic en la tarjeta o teclas 1, 2, 3 y 4 |
+| Iniciar la partida | Botón **JUGAR** o Enter |
+| Mover al superviviente | WASD o flechas de dirección |
+| Disparar | Barra espaciadora |
+| Reintentar tras Game Over | Enter, barra espaciadora o clic |
+| Volver al menú desde Game Over | Escape |
 
-## Reglas
+Los disparos siguen la última dirección de movimiento del personaje, incluso cuando este se encuentra detenido.
 
-- El jugador tiene 3 vidas y 3 segundos de invulnerabilidad tras recibir daño.
-- Los zombis verdes patrullan y persiguen al acercarse; los rojos son más rápidos.
-- Cada zombi eliminado da 10 puntos.
-- Al terminar una oleada, la siguiente llega después de 3 segundos.
-- Número de enemigos: oleada 1 = 3 normales + 2 rápidos; oleada N = (1 + 2N) normales + (1 + N) rápidos.
-- Zombis nacen en los bordes, procurando mantenerse lejos del jugador.
+## Mecánicas
 
-## Patrones de diseño de la asignatura
+- Selección de cuatro supervivientes.
+- Movimiento en ocho direcciones y disparos direccionales.
+- Dos tipos de zombis: normales y rápidos, con estrategias de movimiento distintas.
+- Tres vidas iniciales y tres segundos de protección después de recibir daño.
+- Diez puntos por cada zombi eliminado.
+- Oleadas que comienzan automáticamente después de eliminar a todos los enemigos de la ronda anterior, con una espera de tres segundos.
+- Generación de enemigos cerca de los bordes y a una distancia segura del jugador, cuando el espacio disponible lo permite.
+- Pantallas de inicio y Game Over, con reinicio de partida.
 
-| Patrón | Clases | Uso en el juego |
+La composición de las oleadas sigue las expresiones:
+
+- Zombis normales: `1 + 2 * númeroDeOleada`.
+- Zombis rápidos: `1 + númeroDeOleada`.
+
+Por ejemplo, la primera oleada contiene cinco enemigos y la segunda contiene ocho.
+
+## Arquitectura y patrones de diseño
+
+| Patrón | Clases principales | Aplicación |
 | --- | --- | --- |
-| Singleton | `EstadoPartida` | Única instancia que centraliza vidas, puntaje y oleada |
-| Strategy | `MovimientoZombie`, `PersecucionDirecta`, `MovimientoErratico`, `Zombie` | Intercambiar comportamiento de movimiento durante la partida |
-| Template Method | `Zombie`, `ZombieNormal`, `ZombieRapido` | `Zombie.actualizar()` es `final` y ejecuta los pasos del algoritmo; las hijas implementan `comportamientoEspecial()` |
-| Builder | `Oleada`, `OleadaBuilder`, `OleadaConcretaBuilder`, `DirectorOleadas` | Construcción de oleadas configuradas con múltiples tipos de enemigos |
+| Singleton | `EstadoPartida` | Centraliza las vidas, el puntaje y el número de oleada. |
+| Strategy | `MovimientoZombie`, `PersecucionDirecta`, `MovimientoErratico`, `Zombie` | Permite intercambiar algoritmos de movimiento en tiempo de ejecución. |
+| Template Method | `Zombie`, `ZombieNormal`, `ZombieRapido` | Define la secuencia de actualización de los zombis y permite personalizar su comportamiento. |
+| Builder | `Oleada`, `OleadaBuilder`, `OleadaConcretaBuilder`, `DirectorOleadas` | Construye oleadas con cantidades variables de enemigos. |
 
-**GM-4:** `Zombie` es clase abstracta con dos subclases concretas; `MovimientoZombie` es interfaz implementada por dos clases.
+La clase abstracta `Zombie` es extendida por `ZombieNormal` y `ZombieRapido`. La interfaz `MovimientoZombie` cuenta con implementaciones diferentes, y la lógica del juego utiliza polimorfismo para gestionar las entidades.
 
-## Estructura del proyecto
+## Organización del proyecto
 
-- `core/`: lógica del juego y patrones de diseño.
-- `lwjgl3/`: lanzador de escritorio LibGDX.
-- `assets/`: sprites y sonidos.
+| Ruta | Contenido |
+| --- | --- |
+| `core/src/main/java/puppy/code/` | Lógica del juego, pantallas, entidades y patrones de diseño. |
+| `lwjgl3/` | Lanzador de escritorio. |
+| `assets/` | Imágenes, fondos, efectos de sonido y música. |
+| `gradle/`, `gradlew`, `gradlew.bat` | Herramientas y configuración del entorno de compilación. |
 
-Se conservaron los nombres internos históricos `SpaceNavigation` y `SpaceNav2024-core/-lwjgl3` para no romper la configuración de Eclipse/Gradle. El juego visible se llama Zombie Survival.
-
-## Pendiente antes de la entrega final
-
-- Reemplazar el sprite provisional `aGreyMedium4.png` de los zombis y `MainShip3.png` del jugador por arte definitivo.
-- Preparar UML e informe GM-1 a GM-10 con referencias a métodos/líneas.
-- Revisar que haya al menos 6 commits y ejecutar una prueba final con Oracle JDK 11.
-
-Los cambios de esta revisión se describen en `CAMBIOS_REVISION.md`.
+Los nombres internos `SpaceNavigation` y `SpaceNav2024` corresponden a la estructura heredada del proyecto base. El nombre visible del videojuego es **Zombie Survival**.

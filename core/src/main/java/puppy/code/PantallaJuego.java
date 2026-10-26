@@ -11,7 +11,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-/** Pantalla principal sin restos de la lógica de asteroides de SpaceNav. */
+/** Pantalla principal de Zombie Survival. */
 public class PantallaJuego implements Screen {
     private final SpaceNavigation game;
     private final SpriteBatch batch;
@@ -51,11 +51,10 @@ public class PantallaJuego implements Screen {
                 new Texture(Gdx.files.internal("Rocket2.png")),
                 Gdx.audio.newSound(Gdx.files.internal("pop-sound.mp3")));
 
-        // Mostrar el personaje elegido en el menu. Si aun no hay PNG propio,
-        // el sprite provisional aparece con el color correspondiente.
+        // Configurar el aspecto del superviviente seleccionado en el menu.
         nave.setColor(Personajes.color(game.getPersonajeSeleccionado()));
 
-        // Textura provisional: cada zombi tiene su propio Sprite coloreado.
+        // Cargar las texturas de los dos tipos de zombis.
         texturaZombieNormal = new Texture(Gdx.files.internal("zombie_normal.png"));
         texturaZombieRapido = new Texture(Gdx.files.internal("zombie_rapido.png"));
         texturaSuelo = new Texture(Gdx.files.internal("suelo.png"));

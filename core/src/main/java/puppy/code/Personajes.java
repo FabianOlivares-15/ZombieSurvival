@@ -3,7 +3,7 @@ package puppy.code;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 
-/** Catalogo de personajes: admite PNG propios sin cambiar el codigo. */
+/** Catalogo de personajes seleccionables. */
 public final class Personajes {
     public static final int TOTAL = 4;
     private static final Color[] COLORES_PROVISIONALES = {
@@ -27,7 +27,7 @@ public final class Personajes {
 
     public static Color color(int indice) {
         comprobar(indice);
-        // Cuando el usuario reemplace un PNG, respetar los colores originales.
+        // Conservar los colores originales de los sprites disponibles.
         String ruta = "personaje" + (indice + 1) + ".png";
         return Gdx.files.internal(ruta).exists()
                 ? Color.WHITE : COLORES_PROVISIONALES[indice];
