@@ -32,9 +32,9 @@ public abstract class Zombie {
     // TEMPLATE METHOD: define el orden de actualizacion
     public final void actualizar(float delta, Vector2 jugador) {
 
-        mover(delta, jugador);
-
         comportamientoEspecial(delta, jugador);
+
+        mover(delta, jugador);
 
         actualizarPosicionSprite();
     }
@@ -42,8 +42,10 @@ public abstract class Zombie {
     // STRATEGY: delega el movimiento a una estrategia
     private void mover(float delta, Vector2 jugador) {
 
-        estrategiaMovimiento.mover(
-                posicion, jugador, velocidad, delta);
+        // Estrategias trabajan con la esquina inferior izquierda del sprite.
+        Vector2 destino = new Vector2(jugador).sub(sprite.getWidth() / 2f,
+                sprite.getHeight() / 2f);
+        estrategiaMovimiento.mover(posicion, destino, velocidad, delta);
     }
 
     // Cada tipo de zombi implementara su comportamiento

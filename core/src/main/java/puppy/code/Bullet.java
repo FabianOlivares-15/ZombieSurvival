@@ -6,75 +6,41 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 
-
+/** Proyectil. Velocidades medidas en píxeles por segundo, no por fotograma. */
 public class Bullet {
+    private final float xSpeed;
+    private final float ySpeed;
+    private final Sprite sprite;
+    private boolean destroyed;
 
-	private float xSpeed;
-	private float ySpeed;
-	private boolean destroyed = false;
-	private Sprite spr;
-	    
-	    public Bullet(float x, float y, float xSpeed, float ySpeed, Texture tx) {
-	    	spr = new Sprite(tx);
-	    	spr.setPosition(x, y);
-	        this.xSpeed = xSpeed;
-	        this.ySpeed = ySpeed;
-	     // Girar la bala desde su centro
-	        spr.setOriginCenter();
+    public Bullet(float x, float y, float xSpeed, float ySpeed, Texture textura) {
+        sprite = new Sprite(textura);
+        sprite.setPosition(x, y);
+        sprite.setOriginCenter();
+        sprite.setRotation(MathUtils.atan2(-xSpeed, ySpeed) * MathUtils.radiansToDegrees);
+        this.xSpeed = xSpeed;
+        this.ySpeed = ySpeed;
+    }
 
-	        // Orientar la imagen hacia donde avanza
-	        float angulo = MathUtils.atan2(-xSpeed, ySpeed) * MathUtils.radiansToDegrees;
+    public void update(float delta) {
+        if (destroyed) return;
+        sprite.translate(xSpeed * delta, ySpeed * delta);
+        if (sprite.getX() < -sprite.getWidth() || sprite.getX() > Gdx.graphics.getWidth()
+                || sprite.getY() < -sprite.getHeight() || sprite.getY() > Gdx.graphics.getHeight()) {
+            destroyed = true;
+        }
+    }
 
-	        spr.setRotation(angulo);
-	    }
-	    public void update() {
-	        spr.setPosition(spr.getX()+xSpeed, spr.getY()+ySpeed);
-	        if (spr.getX() < 0 || spr.getX()+spr.getWidth() > Gdx.graphics.getWidth()) {
-	            destroyed = true;
-	        }
-	        if (spr.getY() < 0 || spr.getY()+spr.getHeight() > Gdx.graphics.getHeight()) {
-	        	destroyed = true;
-	        }
-	        
-	    }
-	    
-	    public void draw(SpriteBatch batch) {
-	    	spr.draw(batch);
-	    }
-	    
-	    public boolean checkCollision(Ball2 b2) {
-	        if(spr.getBoundingRectangle().overlaps(b2.getArea())){
-	        	// Se destruyen ambos
-	            this.destroyed = true;
-	            return true;
-	
-	        }
-	        return false;
-	    }
+    public boolean checkCollision(Zombie zombie) {
+        if (destroyed || zombie == null || zombie.estaEliminado()) return false;
+        if (!sprite.getBoundingRectangle().overlaps(zombie.getArea())) return false;
+        destroyed = true;
+        return zombie.recibirDisparo();
+    }
 
-		public boolean checkCollision(Zombie zombie) {
-		
-		    // Evitar colisiones con balas o zombis eliminados
-		    if (destroyed || zombie == null
-		            || zombie.estaEliminado()) {
-		        return false;
-		    }
-		
-		    // Comprobar si la bala toca al zombi
-		    if (spr.getBoundingRectangle().overlaps(
-		            zombie.getArea())) {
-		
-		        // Marcar la bala como destruida
-		        destroyed = true;
-		
-		        // Eliminar al zombi
-		        return zombie.recibirDisparo();
-		    }
-		
-		    return false;
-		}
+    public void draw(SpriteBatch batch) {
+        if (!destroyed) sprite.draw(batch);
+    }
 
-	    
-	    public boolean isDestroyed() {return destroyed;}
-	
+    public boolean isDestroyed() { return destroyed; }
 }

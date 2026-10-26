@@ -15,7 +15,7 @@ public class Oleada {
     }
 
     public ArrayList<Zombie> getZombies() {
-        return zombies;
+        return new ArrayList<Zombie>(zombies);
     }
 
     public int getCantidadZombies() {

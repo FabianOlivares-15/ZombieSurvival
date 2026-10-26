@@ -1,33 +1,61 @@
-# SpaceNav2024
+# Zombie Survival — Programación Avanzada
 
-A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
+Videojuego 2D en Java 11 y LibGDX 1.12.1, adaptado a partir de SpaceNav2024.
 
-This project was generated with a template including simple application launchers and an `ApplicationAdapter` extension that draws libGDX logo.
+## Cómo ejecutarlo en Windows
 
-## Platforms
+1. Tener instalado **Oracle JDK 11** (el JDK elegido para la asignatura).
+2. Importar el proyecto Gradle existente en Eclipse, sin crear uno desde cero.
+3. Abrir **Gradle Tasks → SpaceNav2024-lwjgl3 → application → run**.
+4. Como alternativa, desde CMD, en la raíz del proyecto:
 
-- `core`: Main module with the application logic shared by all platforms.
-- `lwjgl3`: Primary desktop platform using LWJGL3; was called 'desktop' in older docs.
+   ```cmd
+   set "JAVA_HOME=C:\Program Files\Java\jdk-11.0.32.1"
+   set "PATH=%JAVA_HOME%\bin;%PATH%"
+   gradlew.bat :lwjgl3:run
+   ```
 
-## Gradle
+   Si el JDK está en otra ruta, reemplazar `JAVA_HOME` por su instalación.
 
-This project uses [Gradle](https://gradle.org/) to manage dependencies.
-The Gradle wrapper was included, so you can run Gradle tasks using `gradlew.bat` or `./gradlew` commands.
-Useful Gradle tasks and flags:
+## Controles
 
-- `--continue`: when using this flag, errors will not stop the tasks from running.
-- `--daemon`: thanks to this flag, Gradle daemon will be used to run chosen tasks.
-- `--offline`: when using this flag, cached dependency archives will be used.
-- `--refresh-dependencies`: this flag forces validation of all dependencies. Useful for snapshot versions.
-- `build`: builds sources and archives of every project.
-- `cleanEclipse`: removes Eclipse project data.
-- `cleanIdea`: removes IntelliJ project data.
-- `clean`: removes `build` folders, which store compiled classes and built archives.
-- `eclipse`: generates Eclipse project data.
-- `idea`: generates IntelliJ project data.
-- `lwjgl3:jar`: builds application's runnable jar, which can be found at `lwjgl3/build/libs`.
-- `lwjgl3:run`: starts the application.
-- `test`: runs unit tests (if any).
+- **WASD** o **flechas**: caminar en 8 direcciones y apuntar.
+- **Espacio**: disparar en la última dirección del movimiento.
+- **Menú**: cualquier tecla o clic para iniciar.
+- **Game Over**: Enter o clic para reintentar; Escape para volver al menú.
 
-Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
-For example, `core:clean` removes `build` folder only from the `core` project.
+## Reglas
+
+- El jugador tiene 3 vidas y 3 segundos de invulnerabilidad tras recibir daño.
+- Los zombis verdes patrullan y persiguen al acercarse; los rojos son más rápidos.
+- Cada zombi eliminado da 10 puntos.
+- Al terminar una oleada, la siguiente llega después de 3 segundos.
+- Número de enemigos: oleada 1 = 3 normales + 2 rápidos; oleada N = (1 + 2N) normales + (1 + N) rápidos.
+- Zombis nacen en los bordes, procurando mantenerse lejos del jugador.
+
+## Patrones de diseño de la asignatura
+
+| Patrón | Clases | Uso en el juego |
+| --- | --- | --- |
+| Singleton | `EstadoPartida` | Única instancia que centraliza vidas, puntaje y oleada |
+| Strategy | `MovimientoZombie`, `PersecucionDirecta`, `MovimientoErratico`, `Zombie` | Intercambiar comportamiento de movimiento durante la partida |
+| Template Method | `Zombie`, `ZombieNormal`, `ZombieRapido` | `Zombie.actualizar()` es `final` y ejecuta los pasos del algoritmo; las hijas implementan `comportamientoEspecial()` |
+| Builder | `Oleada`, `OleadaBuilder`, `OleadaConcretaBuilder`, `DirectorOleadas` | Construcción de oleadas configuradas con múltiples tipos de enemigos |
+
+**GM-4:** `Zombie` es clase abstracta con dos subclases concretas; `MovimientoZombie` es interfaz implementada por dos clases.
+
+## Estructura del proyecto
+
+- `core/`: lógica del juego y patrones de diseño.
+- `lwjgl3/`: lanzador de escritorio LibGDX.
+- `assets/`: sprites y sonidos.
+
+Se conservaron los nombres internos históricos `SpaceNavigation` y `SpaceNav2024-core/-lwjgl3` para no romper la configuración de Eclipse/Gradle. El juego visible se llama Zombie Survival.
+
+## Pendiente antes de la entrega final
+
+- Reemplazar el sprite provisional `aGreyMedium4.png` de los zombis y `MainShip3.png` del jugador por arte definitivo.
+- Preparar UML e informe GM-1 a GM-10 con referencias a métodos/líneas.
+- Revisar que haya al menos 6 commits y ejecutar una prueba final con Oracle JDK 11.
+
+Los cambios de esta revisión se describen en `CAMBIOS_REVISION.md`.

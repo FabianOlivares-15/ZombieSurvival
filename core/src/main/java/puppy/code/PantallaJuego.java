@@ -1,359 +1,179 @@
 package puppy.code;
 
 import java.util.ArrayList;
-import java.util.Random;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.utils.ScreenUtils;
 
-
+/** Pantalla principal sin restos de la lógica de asteroides de SpaceNav. */
 public class PantallaJuego implements Screen {
+    private final SpaceNavigation game;
+    private final SpriteBatch batch;
+    private final OrthographicCamera camera;
+    private final Sound explosionSound;
+    private final Music gameMusic;
+    private final Nave4 nave;
+    private final Texture texturaZombie;
+    private final EstadoPartida estadoPartida;
+    private final OleadaConcretaBuilder builderOleadas;
+    private final DirectorOleadas directorOleadas;
+    private final ArrayList<Bullet> balas = new ArrayList<Bullet>();
 
-	private SpaceNavigation game;
-	private OrthographicCamera camera;	
-	private SpriteBatch batch;
-	private Sound explosionSound;
-	private Music gameMusic;
-	private int ronda;
-	private int velXAsteroides; 
-	private int velYAsteroides; 
-	private int cantAsteroides;
-	
-	private Nave4 nave;
-	private ArrayList<Zombie> zombies;
-	private Texture texturaZombie;
-	private DirectorOleadas directorOleadas;
-	private OleadaConcretaBuilder builderOleadas;
-	private EstadoPartida estadoPartida;
-	private float esperaOleada = -1f;
-	private  ArrayList<Ball2> balls1 = new ArrayList<>();
-	private  ArrayList<Ball2> balls2 = new ArrayList<>();
-	private  ArrayList<Bullet> balas = new ArrayList<>();
+    private ArrayList<Zombie> zombies;
+    private float esperaOleada = -1f;
 
+    public PantallaJuego(SpaceNavigation game) {
+        this.game = game;
+        batch = game.getBatch();
+        camera = new OrthographicCamera();
+        camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-	public PantallaJuego(SpaceNavigation game, int ronda, int vidas, int score,  
-			int velXAsteroides, int velYAsteroides, int cantAsteroides) {
-		this.game = game;
-		this.ronda = ronda;
-		//this.score = score;
-		this.velXAsteroides = velXAsteroides;
-		this.velYAsteroides = velYAsteroides;
-		this.cantAsteroides = cantAsteroides;
-		
-		batch = game.getBatch();
-		camera = new OrthographicCamera();	
-		camera.setToOrtho(false, 800, 640);
-		//inicializar assets; musica de fondo y efectos de sonido
-		explosionSound = Gdx.audio.newSound(Gdx.files.internal("explosion.ogg"));
-		explosionSound.setVolume(1,0.5f);
-		gameMusic = Gdx.audio.newMusic(Gdx.files.internal("piano-loops.wav")); //
-		
-		gameMusic.setLooping(true);
-		gameMusic.setVolume(0.5f);
-		gameMusic.play();
-		
-	    // cargar imagen de la nave, 64x64   
-	    nave = new Nave4(Gdx.graphics.getWidth()/2-50,30,new Texture(Gdx.files.internal("MainShip3.png")),
-	    				Gdx.audio.newSound(Gdx.files.internal("hurt.ogg")), 
-	    				new Texture(Gdx.files.internal("Rocket2.png")), 
-	    				Gdx.audio.newSound(Gdx.files.internal("pop-sound.mp3"))); 
-        
-        // Obtener la unica instancia del estado
         estadoPartida = EstadoPartida.getInstance();
+        estadoPartida.reiniciar(); // Solamente al iniciar una partida, no entre oleadas.
 
-        // Preparar el estado para una partida nueva
-        estadoPartida.reiniciar();
-        nave.setVidas(vidas);
-        estadoPartida.setPuntaje(score);
+        explosionSound = Gdx.audio.newSound(Gdx.files.internal("explosion.ogg"));
+        gameMusic = Gdx.audio.newMusic(Gdx.files.internal("piano-loops.wav"));
+        gameMusic.setLooping(true);
+        gameMusic.setVolume(0.35f);
 
-        // Textura provisional de los zombis
-        texturaZombie = new Texture(
-                Gdx.files.internal("aGreyMedium4.png"));
+        nave = new Nave4(Gdx.graphics.getWidth() / 2 - 22, 60,
+                new Texture(Gdx.files.internal("MainShip3.png")),
+                Gdx.audio.newSound(Gdx.files.internal("hurt.ogg")),
+                new Texture(Gdx.files.internal("Rocket2.png")),
+                Gdx.audio.newSound(Gdx.files.internal("pop-sound.mp3")));
 
-        // Crear lista de zombis
-        zombies = new ArrayList<Zombie>();
-
-        builderOleadas =
-                new OleadaConcretaBuilder(texturaZombie);
-
-        // Informar donde comienza el jugador
-        builderOleadas.setPosicionJugador(new Vector2(nave.getX() + 22.5f, nave.getY() + 22.5f));
-
+        // Textura provisional: cada zombi tiene su propio Sprite coloreado.
+        texturaZombie = new Texture(Gdx.files.internal("aGreyMedium4.png"));
+        builderOleadas = new OleadaConcretaBuilder(texturaZombie);
+        builderOleadas.setPosicionJugador(nave.getCentro());
         directorOleadas = new DirectorOleadas(builderOleadas);
-
-        // Construir la primera oleada
-        Oleada primeraOleada = directorOleadas.construirOleada(estadoPartida.getOleada());
-
-        // Obtener los zombis de la oleada
-        zombies = primeraOleada.getZombies();
-
-
-
-        
-	}
-    
-	public void dibujaEncabezado() {
-		CharSequence str = "Vidas: " + estadoPartida.getVidas() + " Oleada: " + estadoPartida.getOleada();
-		game.getFont().getData().setScale(2f);		
-		game.getFont().draw(batch, str, 10, 30);
-		game.getFont().draw(batch, "Puntos: " + estadoPartida.getPuntaje(), Gdx.graphics.getWidth() - 180,30);
-		game.getFont().draw(batch, "HighScore:"+game.getHighScore(), Gdx.graphics.getWidth()/2-100, 30);
-		// Mostrar cuenta regresiva entre oleadas
-		if (esperaOleada > 0f) {
-		    game.getFont().draw(batch, "Siguiente oleada en: " + (int) Math.ceil(esperaOleada), Gdx.graphics.getWidth() / 2f - 170, 90);
-		}
-	}
-	@Override
-	public void render(float delta) {
-		  Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-          batch.begin();
-		  dibujaEncabezado();
-		      // colisiones entre balas y asteroides y su destruccion  
-
-			for (int i = 0; i < balas.size(); i++) {
-			
-			    Bullet b = balas.get(i);
-			    b.update();
-			
-			    // Comprobar colisiones de balas con asteroides
-			    for (int j = 0; j < balls1.size(); j++) {
-			
-			        if (b.checkCollision(balls1.get(j))) {
-			            explosionSound.play();
-			            balls1.remove(j);
-			            balls2.remove(j);
-			            j--;
-			            estadoPartida.sumarPuntos(10);
-			        }
-			    }
-			
-			    // Eliminar balas destruidas
-			    if (b.isDestroyed()) {
-			        balas.remove(b);
-			        i--;
-			    }
-			
-			} // IMPORTANTE: aqui termina el for de las balas
-			
-			// Los asteroides mantienen su comportamiento original
-			if (!nave.estaHerido()) {
-			
-			    // Actualizar movimiento de asteroides
-			    for (Ball2 ball : balls1) {
-			        ball.update();
-			    }
-			
-			    // Colisiones entre asteroides y sus rebotes
-			    for (int i = 0; i < balls1.size(); i++) {
-			
-			        Ball2 ball1 = balls1.get(i);
-			
-			        for (int j = 0; j < balls2.size(); j++) {
-			
-			            Ball2 ball2 = balls2.get(j);
-			
-			            if (i < j) {
-			                ball1.checkCollision(ball2);
-			            }
-			        }
-			    }
-			
-			} // Aqui termina el if de proteccion
-			
-			// Dibujar balas
-			for (Bullet b : balas) {
-			    b.draw(batch);
-			}
-			
-			// Dibujar jugador
-			nave.draw(batch, this);
-
-	   // Obtener posicion actual del jugador
-	      Vector2 posicionJugador = new Vector2(nave.getX() + 22.5f, nave.getY() + 22.5f);
-
-
-
-		   // Actualizar todos los zombis
-		   for (Zombie zombie : zombies) {
-	
-		       if (!zombie.estaEliminado()) {
-	
-		           zombie.actualizar(delta, posicionJugador);
-	
-		           zombie.dibujar(batch);
-	
-		           nave.recibirDanioZombie(zombie);
-		       }
-		   }
-
-	
-
-			// Comprobar disparos contra todos los zombis
-			for (int i = balas.size() - 1; i >= 0; i--) {
-	
-			    Bullet bala = balas.get(i);
-	
-			    if (bala.isDestroyed()) {
-			        continue;
-			    }
-	
-			    // Recorrer todos los zombis
-			    for (Zombie zombie : zombies) {
-	
-			        if (!zombie.estaEliminado()
-			                && bala.checkCollision(zombie)) {
-	
-			            // Sonido de impacto
-			            explosionSound.play();
-	
-			            // Aumentar puntaje
-			            estadoPartida.sumarPuntos(10);
-	
-			            // Eliminar bala
-			            balas.remove(i);
-	
-			            // Una bala elimina como maximo un zombi
-			            break;
-			        }
-			    }
-			}
-
-
-
-	      //dibujar asteroides y manejar colision con nave
-	      for (int i = 0; i < balls1.size(); i++) {
-	    	    Ball2 b=balls1.get(i);
-	    	    b.draw(batch);
-		          //perdió vida o game over
-	              if (nave.checkCollision(b)) {
-		            //asteroide se destruye con el choque             
-	            	 balls1.remove(i);
-	            	 balls2.remove(i);
-	            	 i--;
-              }   	  
-  	        }
-	      
-	      if (nave.estaDestruido()) {
-	    	  if (estadoPartida.getPuntaje() > game.getHighScore()) {
-	    		    game.setHighScore(estadoPartida.getPuntaje());
-	    		}
-	    	Screen ss = new PantallaGameOver(game);
-  			ss.resize(1200, 800);
-  			game.setScreen(ss);
-  			dispose();
-  		  }
-
-			batch.end();
-			
-			// Actualizar oleadas mientras el jugador siga vivo
-			if (!nave.estaDestruido()) {
-			    actualizarOleadas(delta);
-			}
-
-	    	 
-	}
-	
-
-	private void actualizarOleadas(float delta) {
-	
-	    // Contar zombis que siguen vivos
-	    int zombisVivos = 0;
-	
-	    for (Zombie zombie : zombies) {
-	
-	        if (!zombie.estaEliminado()) {
-	            zombisVivos++;
-	        }
-	    }
-	
-	    // Si quedan zombis, la oleada continua
-	    if (zombisVivos > 0) {
-	        esperaOleada = -1f;
-	        return;
-	    }
-	
-	    // Si murieron todos, comenzar la espera
-	    if (esperaOleada < 0f) {
-	        esperaOleada = 3f;
-	        return;
-	    }
-	
-	    // Descontar los segundos de espera
-	    esperaOleada -= delta;
-	
-	    // Crear la siguiente oleada
-	    if (esperaOleada <= 0f) {
-	
-	    	estadoPartida.avanzarOleada();
-
-	    	// Obtener la posicion actual del jugador
-	    	Vector2 posicionActualJugador = new Vector2(
-	    	        nave.getX() + 22.5f,
-	    	        nave.getY() + 22.5f
-	    	);
-
-	    	// Informar la posicion al Builder
-	    	builderOleadas.setPosicionJugador(posicionActualJugador);
-
-	    	// Construir la nueva oleada
-	    	Oleada nuevaOleada = directorOleadas.construirOleada(estadoPartida.getOleada());
-	
-	        zombies = nuevaOleada.getZombies();
-	
-	        // Reiniciar el temporizador
-	        esperaOleada = -1f;
-	    }
-	}
-
-    
-    public boolean agregarBala(Bullet bb) {
-    	return balas.add(bb);
+        Oleada primera = directorOleadas.construirOleada(estadoPartida.getOleada());
+        zombies = primera.getZombies();
     }
-	
-	@Override
-	public void show() {
-		// TODO Auto-generated method stub
-		gameMusic.play();
-	}
 
-	@Override
-	public void resize(int width, int height) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void render(float delta) {
+        float paso = Math.min(delta, 1f / 20f); // Evita saltos grandes si la ventana se congela.
+        ScreenUtils.clear(0.06f, 0.09f, 0.12f, 1f);
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
+        batch.begin();
 
-	@Override
-	public void pause() {
-		// TODO Auto-generated method stub
-		
-	}
+        // Actualizar primero al personaje, para que los zombis persigan su posición actual.
+        nave.draw(batch, this, paso);
+        Vector2 posicionJugador = nave.getCentro();
 
-	@Override
-	public void resume() {
-		// TODO Auto-generated method stub
-		
-	}
+        // Actualizar las balas y detectar impactos sin modificar la lista durante el for-each.
+        for (int i = balas.size() - 1; i >= 0; i--) {
+            Bullet bala = balas.get(i);
+            bala.update(paso);
+            if (!bala.isDestroyed()) {
+                for (Zombie zombie : zombies) {
+                    if (bala.checkCollision(zombie)) {
+                        explosionSound.play(0.5f);
+                        estadoPartida.sumarPuntos(10);
+                        break;
+                    }
+                }
+            }
+            if (bala.isDestroyed()) {
+                balas.remove(i);
+            } else {
+                bala.draw(batch);
+            }
+        }
 
-	@Override
-	public void hide() {
-		// TODO Auto-generated method stub
-		
-	}
+        // Patrón Template Method + Strategy: mismo flujo, distinta estrategia por zombi.
+        for (Zombie zombie : zombies) {
+            if (!zombie.estaEliminado()) {
+                zombie.actualizar(paso, posicionJugador);
+                zombie.dibujar(batch);
+                nave.recibirDanioZombie(zombie);
+            }
+        }
 
-	@Override
-	public void dispose() {
-		// TODO Auto-generated method stub
-		this.explosionSound.dispose();
-		this.gameMusic.dispose();
-		texturaZombie.dispose();
-	}
-   
+        dibujaEncabezado();
+        batch.end();
+
+        // Cambiar pantalla sólo después de terminar el SpriteBatch.
+        if (nave.estaDestruido()) {
+            if (estadoPartida.getPuntaje() > game.getHighScore()) {
+                game.setHighScore(estadoPartida.getPuntaje());
+            }
+            game.setScreen(new PantallaGameOver(game));
+            dispose();
+            return;
+        }
+        actualizarOleadas(paso);
+    }
+
+    private int contarZombisVivos() {
+        int vivos = 0;
+        for (Zombie zombie : zombies) {
+            if (!zombie.estaEliminado()) vivos++;
+        }
+        return vivos;
+    }
+
+    private void actualizarOleadas(float delta) {
+        if (contarZombisVivos() > 0) {
+            esperaOleada = -1f;
+            return;
+        }
+        if (esperaOleada < 0f) {
+            esperaOleada = 3f;
+            return;
+        }
+        esperaOleada -= delta;
+        if (esperaOleada <= 0f) {
+            estadoPartida.avanzarOleada();
+            builderOleadas.setPosicionJugador(nave.getCentro());
+            zombies = directorOleadas.construirOleada(estadoPartida.getOleada()).getZombies();
+            esperaOleada = -1f;
+        }
+    }
+
+    private void dibujaEncabezado() {
+        game.getFont().getData().setScale(1.6f);
+        float alto = Gdx.graphics.getHeight();
+        float ancho = Gdx.graphics.getWidth();
+        game.getFont().draw(batch,
+                "Vidas: " + estadoPartida.getVidas() + "   Oleada: " + estadoPartida.getOleada(),
+                18f, alto - 16f);
+        game.getFont().draw(batch, "Puntos: " + estadoPartida.getPuntaje(),
+                ancho - 230f, alto - 16f);
+        game.getFont().draw(batch, "Zombis restantes: " + contarZombisVivos(),
+                18f, alto - 53f);
+        if (esperaOleada > 0f) {
+            game.getFont().draw(batch,
+                    "Siguiente oleada en " + (int) Math.ceil(esperaOleada) + "...",
+                    ancho / 2f - 165f, alto / 2f);
+        }
+    }
+
+    public boolean agregarBala(Bullet bala) { return balas.add(bala); }
+
+    @Override public void show() { gameMusic.play(); }
+
+    @Override public void resize(int width, int height) {
+        camera.setToOrtho(false, width, height);
+        camera.update();
+    }
+
+    @Override public void pause() { gameMusic.pause(); }
+    @Override public void resume() { gameMusic.play(); }
+    @Override public void hide() { gameMusic.pause(); }
+
+    @Override public void dispose() {
+        gameMusic.dispose();
+        explosionSound.dispose();
+        texturaZombie.dispose();
+        nave.dispose();
+    }
 }
