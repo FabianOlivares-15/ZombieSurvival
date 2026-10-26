@@ -23,7 +23,7 @@ public abstract class Zombie {
         posicion = new Vector2(x, y);
 
         sprite = new Sprite(textura);
-        sprite.setBounds(x, y, 45, 45);
+        sprite.setBounds(x, y, 42, 56);
 
         this.velocidad = velocidad;
         this.estrategiaMovimiento = estrategia;

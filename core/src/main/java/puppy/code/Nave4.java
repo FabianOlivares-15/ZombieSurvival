@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
@@ -33,7 +34,7 @@ public class Nave4 {
         this.sonidoHerido = sonidoHerido;
         this.sonidoBala = sonidoBala;
         sprite = new Sprite(texturaJugador);
-        sprite.setBounds(x, y, 45f, 45f);
+        sprite.setBounds(x, y, 42f, 56f);
         sprite.setOriginCenter();
     }
 
@@ -99,6 +100,10 @@ public class Nave4 {
     public boolean estaDestruido() { return destruida; }
     public boolean estaHerido() { return tiempoHerido > 0f; }
     public int getVidas() { return EstadoPartida.getInstance().getVidas(); }
+
+    public void setColor(Color color) {
+        sprite.setColor(color);
+    }
 
     public void dispose() {
         texturaJugador.dispose();

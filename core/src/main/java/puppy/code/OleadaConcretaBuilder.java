@@ -9,11 +9,13 @@ import com.badlogic.gdx.math.Vector2;
 public class OleadaConcretaBuilder implements OleadaBuilder {
 
     private Oleada oleada;
-    private Texture texturaZombie;
+    private final Texture texturaNormal;
+    private final Texture texturaRapido;
     private Vector2 posicionJugador = new Vector2();
 
-    public OleadaConcretaBuilder(Texture texturaZombie) {
-        this.texturaZombie = texturaZombie;
+    public OleadaConcretaBuilder(Texture texturaNormal, Texture texturaRapido) {
+        this.texturaNormal = texturaNormal;
+        this.texturaRapido = texturaRapido;
         reset();
     }
     public void setPosicionJugador(Vector2 posicionJugador) {
@@ -35,10 +37,10 @@ public class OleadaConcretaBuilder implements OleadaBuilder {
         	ZombieNormal zombie = new ZombieNormal(
         	        posicion.x,
         	        posicion.y,
-        	        texturaZombie
+        	        texturaNormal
         	);
 
-            zombie.setColor(Color.GREEN);
+            zombie.setColor(Color.WHITE);
 
             oleada.agregarZombie(zombie);
         }
@@ -54,10 +56,10 @@ public class OleadaConcretaBuilder implements OleadaBuilder {
         	ZombieRapido zombie = new ZombieRapido(
         	        posicion.x,
         	        posicion.y,
-        	        texturaZombie
+        	        texturaRapido
         	);
 
-            zombie.setColor(Color.RED);
+            zombie.setColor(Color.WHITE);
 
             oleada.agregarZombie(zombie);
         }
@@ -72,10 +74,10 @@ public class OleadaConcretaBuilder implements OleadaBuilder {
 	private Vector2 generarPosicionSegura() {
 	
 	    float maxX = Math.max(0f,
-	            Gdx.graphics.getWidth() - 45f);
+	            Gdx.graphics.getWidth() - 42f);
 	
 	    float maxY = Math.max(0f,
-	            Gdx.graphics.getHeight() - 45f);
+	            Gdx.graphics.getHeight() - 56f);
 	
 	    float distanciaMinima = 280f;
 	
@@ -113,7 +115,7 @@ public class OleadaConcretaBuilder implements OleadaBuilder {
 	
 	        // Distancia desde el centro del zombi
 	        Vector2 centroZombie =
-	                new Vector2(x + 22.5f, y + 22.5f);
+	                new Vector2(x + 21f, y + 28f);
 	
 	        float distancia =
 	                centroZombie.dst(posicionJugador);

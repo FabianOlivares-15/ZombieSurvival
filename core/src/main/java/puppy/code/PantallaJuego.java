@@ -19,7 +19,9 @@ public class PantallaJuego implements Screen {
     private final Sound explosionSound;
     private final Music gameMusic;
     private final Nave4 nave;
-    private final Texture texturaZombie;
+    private final Texture texturaZombieNormal;
+    private final Texture texturaZombieRapido;
+    private final Texture texturaSuelo;
     private final EstadoPartida estadoPartida;
     private final OleadaConcretaBuilder builderOleadas;
     private final DirectorOleadas directorOleadas;
@@ -43,14 +45,21 @@ public class PantallaJuego implements Screen {
         gameMusic.setVolume(0.35f);
 
         nave = new Nave4(Gdx.graphics.getWidth() / 2 - 22, 60,
-                new Texture(Gdx.files.internal("MainShip3.png")),
+                new Texture(Gdx.files.internal(
+                        Personajes.rutaImagen(game.getPersonajeSeleccionado()))),
                 Gdx.audio.newSound(Gdx.files.internal("hurt.ogg")),
                 new Texture(Gdx.files.internal("Rocket2.png")),
                 Gdx.audio.newSound(Gdx.files.internal("pop-sound.mp3")));
 
+        // Mostrar el personaje elegido en el menu. Si aun no hay PNG propio,
+        // el sprite provisional aparece con el color correspondiente.
+        nave.setColor(Personajes.color(game.getPersonajeSeleccionado()));
+
         // Textura provisional: cada zombi tiene su propio Sprite coloreado.
-        texturaZombie = new Texture(Gdx.files.internal("aGreyMedium4.png"));
-        builderOleadas = new OleadaConcretaBuilder(texturaZombie);
+        texturaZombieNormal = new Texture(Gdx.files.internal("zombie_normal.png"));
+        texturaZombieRapido = new Texture(Gdx.files.internal("zombie_rapido.png"));
+        texturaSuelo = new Texture(Gdx.files.internal("suelo.png"));
+        builderOleadas = new OleadaConcretaBuilder(texturaZombieNormal, texturaZombieRapido);
         builderOleadas.setPosicionJugador(nave.getCentro());
         directorOleadas = new DirectorOleadas(builderOleadas);
         Oleada primera = directorOleadas.construirOleada(estadoPartida.getOleada());
@@ -64,6 +73,7 @@ public class PantallaJuego implements Screen {
         camera.update();
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
+        batch.draw(texturaSuelo, 0f, 0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         // Actualizar primero al personaje, para que los zombis persigan su posición actual.
         nave.draw(batch, this, paso);
@@ -173,7 +183,9 @@ public class PantallaJuego implements Screen {
     @Override public void dispose() {
         gameMusic.dispose();
         explosionSound.dispose();
-        texturaZombie.dispose();
+        texturaZombieNormal.dispose();
+        texturaZombieRapido.dispose();
+        texturaSuelo.dispose();
         nave.dispose();
     }
 }

@@ -11,7 +11,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class SpaceNavigation extends Game {
 	private SpriteBatch batch;
 	private BitmapFont font;
-	private int highScore;	
+	private int highScore;
+    private int personajeSeleccionado = 0;	
 
 	public void create() {
 		highScore = 0;
@@ -50,4 +51,14 @@ public class SpaceNavigation extends Game {
 	
 	
 
+    public int getPersonajeSeleccionado() {
+        return personajeSeleccionado;
+    }
+
+    public void setPersonajeSeleccionado(int indice) {
+        if (indice < 0 || indice >= Personajes.TOTAL) {
+            throw new IllegalArgumentException("Personaje invalido: " + indice);
+        }
+        personajeSeleccionado = indice;
+    }
 }
