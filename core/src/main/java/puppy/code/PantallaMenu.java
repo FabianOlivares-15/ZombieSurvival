@@ -20,15 +20,17 @@ public class PantallaMenu implements Screen {
     private final Texture pixel;
     private int seleccionado;
 
-    private static final Color PANEL = new Color(0.10f, 0.17f, 0.21f, 0.94f);
-    private static final Color PANEL_ACTIVO = new Color(0.14f, 0.38f, 0.29f, 0.96f);
+    private static final Color PANEL = new Color(0.10f, 0.17f, 0.21f, 0.88f);
+    private static final Color PANEL_ACTIVO = new Color(0.14f, 0.38f, 0.29f, 0.92f);
     private static final Color BORDE_ACTIVO = new Color(0.58f, 0.96f, 0.70f, 1f);
-    private static final Color BOTON = new Color(0.15f, 0.52f, 0.34f, 1f);
+    private static final Color BOTON = new Color(0.15f, 0.52f, 0.34f, 0.95f);
+    private static final Color SOMBRA = new Color(0f, 0f, 0f, 0.45f);
 
     public PantallaMenu(SpaceNavigation game) {
         this.game = game;
         seleccionado = game.getPersonajeSeleccionado();
-        fondo = new Texture(Gdx.files.internal("suelo.png"));
+        fondo = new Texture(Gdx.files.internal(
+                Gdx.files.internal("fondo_menu.png").exists() ? "fondo_menu.png" : "suelo.png"));
         for (int i = 0; i < Personajes.TOTAL; i++) {
             personajes[i] = new Texture(Gdx.files.internal(Personajes.rutaImagen(i)));
         }
@@ -61,6 +63,11 @@ public class PantallaMenu implements Screen {
         batch.begin();
         batch.setColor(Color.WHITE);
         batch.draw(fondo, 0f, 0f, ancho, alto);
+
+        // Oscurecer un poco para que el texto se lea mejor.
+        batch.setColor(SOMBRA);
+        batch.draw(pixel, 0f, 0f, ancho, alto);
+        batch.setColor(Color.WHITE);
 
         game.getFont().getData().setScale(2.5f);
         game.getFont().draw(batch, "ZOMBIE SURVIVAL", 0f,
@@ -113,7 +120,6 @@ public class PantallaMenu implements Screen {
                 0f, alto * 0.10f, ancho, Align.center, false);
         batch.end();
 
-        // Las teclas numericas seleccionan; no comienzan la partida.
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) seleccionado = 0;
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) seleccionado = 1;
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) seleccionado = 2;
