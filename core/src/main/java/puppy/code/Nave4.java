@@ -15,6 +15,10 @@ public class Nave4 {
     private static final float VELOCIDAD = 230f;
     private static final float PROTECCION_SEGUNDOS = 3f;
     private static final float VELOCIDAD_BALA = 360f;
+    private static final float ANCHO_PERSONAJE = 54f;
+    private static final float ALTO_PERSONAJE = 72f;
+    private static final float DURACION_ESCOPETA = 15f;
+    private static final float ANGULO_DISPERSION = 17f;
 
     private final Sprite sprite;
     private final Texture texturaJugador;
@@ -24,6 +28,8 @@ public class Nave4 {
 
     private boolean destruida;
     private float tiempoHerido;
+    private float tiempoEscopeta;
+    private float recargaDisparo;
     private float direccionX = 0f;
     private float direccionY = 1f;
 
@@ -34,7 +40,7 @@ public class Nave4 {
         this.sonidoHerido = sonidoHerido;
         this.sonidoBala = sonidoBala;
         sprite = new Sprite(texturaJugador);
-        sprite.setBounds(x, y, 42f, 56f);
+        sprite.setBounds(x, y, ANCHO_PERSONAJE, ALTO_PERSONAJE);
         sprite.setOriginCenter();
     }
 
@@ -61,22 +67,62 @@ public class Nave4 {
                 0f, Math.max(0f, Gdx.graphics.getHeight() - sprite.getHeight()));
         sprite.setPosition(x, y);
 
-        if (tiempoHerido > 0f) {
-            tiempoHerido = Math.max(0f, tiempoHerido - delta);
-        }
-        // Parpadea durante la protección, pero puede caminar y disparar.
+        tiempoHerido = Math.max(0f, tiempoHerido - delta);
+        tiempoEscopeta = Math.max(0f, tiempoEscopeta - delta);
+        recargaDisparo = Math.max(0f, recargaDisparo - delta);
+
+        // El personaje sigue moviendose y disparando durante su proteccion.
         if (tiempoHerido <= 0f || ((int) (tiempoHerido * 10f)) % 2 == 0) {
             sprite.draw(batch);
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && !destruida) {
-            Vector2 centro = getCentro();
-            float xBala = centro.x + direccionX * 25f - texturaBala.getWidth() / 2f;
-            float yBala = centro.y + direccionY * 25f - texturaBala.getHeight() / 2f;
-            juego.agregarBala(new Bullet(xBala, yBala,
-                    direccionX * VELOCIDAD_BALA, direccionY * VELOCIDAD_BALA, texturaBala));
-            sonidoBala.play();
+        // Mantener Espacio permite disparar de forma continua con una cadencia limitada.
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && !destruida && recargaDisparo <= 0f) {
+            disparar(juego);
+            recargaDisparo = tieneEscopeta() ? 0.48f : 0.27f;
         }
+    }
+
+    private void disparar(PantallaJuego juego) {
+        if (tieneEscopeta()) {
+            crearProyectil(juego, -ANGULO_DISPERSION);
+            crearProyectil(juego, 0f);
+            crearProyectil(juego, ANGULO_DISPERSION);
+        } else {
+            crearProyectil(juego, 0f);
+        }
+        sonidoBala.play(0.55f);
+    }
+
+    private void crearProyectil(PantallaJuego juego, float grados) {
+        float angulo = grados * MathUtils.degreesToRadians;
+        float coseno = (float) Math.cos(angulo);
+        float seno = (float) Math.sin(angulo);
+        float dirX = direccionX * coseno - direccionY * seno;
+        float dirY = direccionX * seno + direccionY * coseno;
+        Vector2 centro = getCentro();
+        float separacion = 40f;
+        float x = centro.x + direccionX * separacion - texturaBala.getWidth() / 2f;
+        float y = centro.y + direccionY * separacion - texturaBala.getHeight() / 2f;
+        juego.agregarBala(new Bullet(x, y, dirX * VELOCIDAD_BALA,
+                dirY * VELOCIDAD_BALA, texturaBala));
+    }
+
+    public void activarEscopeta() {
+        tiempoEscopeta = DURACION_ESCOPETA;
+        recargaDisparo = 0f;
+    }
+
+    public boolean tieneEscopeta() {
+        return tiempoEscopeta > 0f;
+    }
+
+    public float getTiempoEscopeta() {
+        return tiempoEscopeta;
+    }
+
+    public com.badlogic.gdx.math.Rectangle getArea() {
+        return sprite.getBoundingRectangle();
     }
 
     public boolean recibirDanioZombie(Zombie zombie) {

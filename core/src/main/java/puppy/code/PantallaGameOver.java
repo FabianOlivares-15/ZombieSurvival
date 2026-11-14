@@ -59,7 +59,7 @@ public class PantallaGameOver implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             game.setScreen(new PantallaMenu(game));
             dispose();
-        } else if (Gdx.input.isTouched() || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
+        } else if (Gdx.input.justTouched() || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
                 || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             game.setScreen(new PantallaJuego(game));
             dispose();
