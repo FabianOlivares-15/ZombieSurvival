@@ -1,6 +1,5 @@
 # Zombie Survival
-
-**Proyecto de Programación Avanzada**  
+ 
 **Tecnologías:** Java 11, LibGDX 1.12.1 y Gradle
 
 ## Descripción
@@ -13,7 +12,6 @@ El proyecto parte de la estructura de SpaceNav2024 y adapta sus mecánicas a un 
 
 - Oracle JDK 11.
 - Eclipse IDE con soporte para Gradle (Buildship), o una terminal compatible.
-- Windows para utilizar el lanzador de escritorio incluido.
 
 ## Ejecución
 
@@ -23,15 +21,6 @@ El proyecto parte de la estructura de SpaceNav2024 y adapta sus mecánicas a un 
 2. Configurar el proyecto para utilizar **JDK 11**.
 3. Abrir **Gradle Tasks > SpaceNav2024-lwjgl3 > application > run**.
 
-**Desde CMD en Windows**
-
-En la carpeta raíz del proyecto:
-
-```cmd
-set "JAVA_HOME=C:\Program Files\Java\jdk-11.0.32.1"
-set "PATH=%JAVA_HOME%\bin;%PATH%"
-gradlew.bat :lwjgl3:run
-```
 
 La ruta de `JAVA_HOME` debe ajustarse si JDK 11 está instalado en otra ubicación.
 
@@ -64,7 +53,7 @@ La composición de las oleadas sigue las expresiones:
 - Zombis normales: `1 + 2 * númeroDeOleada`.
 - Zombis rápidos: `1 + númeroDeOleada`.
 
-Por ejemplo, la primera oleada contiene cinco enemigos y la segunda contiene ocho.
+Por ejemplo, la primera oleada contiene seis enemigos y la segunda contiene 9.
 
 ## Arquitectura y patrones de diseño
 
